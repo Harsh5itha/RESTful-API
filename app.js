@@ -22,7 +22,8 @@ const articleSchema = {
 }
 const Article = mongoose.model("Article",articleSchema);
 
-app.get("/articles", function(req, res){
+//To all articles
+app.route("/articles").get(function(req, res){
   Article.find(function(err, foundarticles){
 
     if(!err){
@@ -31,10 +32,9 @@ app.get("/articles", function(req, res){
       res.send(err);
     }
   });
-});
+})
 
-app.post("/articles", function(req, res){
-
+.post(function(req, res){
   const newArticle = new Article({
     title: req.body.title,
     content: req.body.content
@@ -46,9 +46,9 @@ app.post("/articles", function(req, res){
       res.send(err);
     }
   });
-});
+})
 
-app.delete("/articles", function(req, res){
+.delete(function(req, res){
   Article.deleteMany(function(err){
     if(!err){
       res.send("Success in deleting all articles!!");
@@ -56,6 +56,57 @@ app.delete("/articles", function(req, res){
       res.send(err);
     }
   });
+});
+
+//To specific article
+app.route("/articles/:articleTitle")
+.get(function(req, res){
+  Article.findOne(
+    {title: req.params.articleTitle},
+    function(err, foundarticle){
+      if(foundarticle){
+        res.send(foundarticle)
+      }else {
+        res.send("No Articles found");
+      }
+    });
+})
+.put(function(req, res){
+  Article.update(
+    {title: req.params.articleTitle},
+    {title: req.body.title, content: req.body.content},
+    {overwrite: true},
+    function(err){
+      if(!err){
+        res.send("Successfully updated the selected article.");
+      }
+    }
+  );
+})
+.patch(function(req, res){
+  Article.update(
+    {title: req.params.articleTitle},
+    {$set: req.body},
+    function(err){
+      if(!err){
+        res.send("Successfully updated using patch!");
+      }else{
+        res.sen(err);
+      }
+    }
+  )
+})
+.delete(function(req, res){
+  Article.deleteOne(
+    {title: req.params.articleTitle},
+    function(err){
+      if (!err){
+        res.send("Successfully deleted article.");
+      } else {
+        res.send(err);
+      }
+    }
+  );
 });
 
 app.listen(3000, function() {
